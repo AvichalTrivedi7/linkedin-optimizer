@@ -4,6 +4,7 @@ Ask the local LLM for image suggestions based on post content.
 If Llama is not available, fall back to rule-based suggestions.
 """
 
+import re
 from typing import List
 from utils.text_cleaning import clean_text, extract_hashtags
 
