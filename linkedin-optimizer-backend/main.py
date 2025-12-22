@@ -24,7 +24,7 @@ app = FastAPI(title="LinkedIn Optimizer (local prototype)")
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8080", "http://127.0.0.1:8080"],
+    allow_origins=["*"],  # Allow all origins for local dev
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -44,11 +44,11 @@ class ProfileIn(BaseModel):
 
 # ---- Routes ----
 @app.get("/")
-def root():  # ← RENAMED to "root"
+def root():
     return {"status": "backend running", "message": "LinkedIn Optimizer API"}
 
 @app.get("/health")
-def health_check():  # ← RENAMED to "health_check"
+def health_check():
     return {"status": "ok"}
 
 @app.post("/analyze_post")
@@ -88,6 +88,6 @@ if __name__ == "__main__":
 
     if args.serve:
         import uvicorn
-        uvicorn.run("main:app", host=args.host, port=args.port, reload=False)
+        uvicorn.run("main:app", host=args.host, port=args.port, reload=True)  # ← Added reload=True
     else:
         cli_loop()
