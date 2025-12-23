@@ -1,3 +1,4 @@
+# main.py
 """
 Runner and lightweight API for the LinkedIn Optimizer local prototype.
 """
@@ -21,10 +22,10 @@ DEFAULT_MODEL_PATH = os.environ.get(
 # ---- FastAPI app ----
 app = FastAPI(title="LinkedIn Optimizer (local prototype)")
 
-# Add CORS middleware
+# ---- CORS Middleware (REQUIRED for frontend) ----
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for local dev
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -88,6 +89,6 @@ if __name__ == "__main__":
 
     if args.serve:
         import uvicorn
-        uvicorn.run("main:app", host=args.host, port=args.port, reload=True)  # ← Added reload=True
+        uvicorn.run("main:app", host=args.host, port=args.port, reload=True)
     else:
         cli_loop()
