@@ -14,13 +14,6 @@ class ProfileRequest(BaseModel):
     about: str = ""
     experience: str = ""
 
-@api_router.on_event("startup")
-async def startup_event():
-    # load the model once at startup (may take time)
-    loaded = server.load()
-    if not loaded:
-        raise RuntimeError("Model failed to load")
-
 @api_router.post("/analyze-post")
 async def analyze_post(req: PostRequest):
     # run local analyzer logic (fast local metrics)
