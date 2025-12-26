@@ -1,94 +1,45 @@
-# main.py
-"""
-Runner and lightweight API for the LinkedIn Optimizer local prototype.
-"""
-
-import argparse
+# backend/main.py
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List, Optional
+from app.api import api_router
+from dotenv import load_dotenv
 
-# local modules
-from app.post_analyzer import analyze_post
-from app.image_suggester import suggest_images
-from app.profile_analyzer import profile_strength
+load_dotenv()
 
-DEFAULT_MODEL_PATH = os.environ.get(
-    "MISTRAL_MODEL_PATH", "models/mistral-7b-instruct-v0.1.Q4_K_M.gguf"
-)
+API_PREFIX = os.getenv("API_PREFIX", "/api/v1")
+APP_TITLE = "LinkedIn Optimizer API"
 
-# ---- FastAPI app ----
-app = FastAPI(title="LinkedIn Optimizer (local prototype)")
+app = FastAPI(title=APP_TITLE)
 
-# ---- CORS Middleware (REQUIRED for frontend) ----
+# CORS - allow Lovable dev + localhost; add any other domains you use
+allowed_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:7860",
+    "https://pro-reach-ai.lovable.app"
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ---- Request Models ----
-class PostIn(BaseModel):
-    text: str
-    use_llm: Optional[bool] = False
-
-class ProfileIn(BaseModel):
-    headline: str
-    about: str
-    experience: Optional[List[str]] = []
-    skills: Optional[List[str]] = []
-    target_roles: Optional[List[str]] = []
-
-# ---- Routes ----
-@app.get("/")
-def root():
-    return {"status": "backend running", "message": "LinkedIn Optimizer API"}
-
+# Simple health/readiness
 @app.get("/health")
-def health_check():
+async def health():
     return {"status": "ok"}
 
-@app.post("/analyze_post")
-def api_analyze_post(body: PostIn):
-    model_path = DEFAULT_MODEL_PATH if body.use_llm else None
-    res = analyze_post(body.text, model_path_for_rewrites=model_path)
-    return res
+@app.get("/ready")
+async def ready():
+    # optionally expand to check model loaded, disk space, etc.
+    return {"status": "ready"}
 
-@app.post("/suggest_images")
-def api_suggest_images(body: PostIn):
-    model_path = DEFAULT_MODEL_PATH if body.use_llm else DEFAULT_MODEL_PATH
-    return {"suggestions": suggest_images(body.text, model_path=model_path, n=3)}
+# include your API router
+app.include_router(api_router, prefix=API_PREFIX)
 
-@app.post("/analyze_profile")
-def api_analyze_profile(body: ProfileIn):
-    res = profile_strength(
-        body.headline, body.about, body.experience or [], body.skills or [], body.target_roles or []
-    )
-    return res
-
-# ---- CLI runner ----
-def cli_loop():
-    print("\n--- LINKEDIN OPTIMIZER (LOCAL PROTOTYPE) ---")
-    while True:
-        print("\nOptions: 1) Analyze Post  2) Image Suggestions  3) Analyze Profile  4) Exit")
-        choice = input("Enter choice: ").strip()
-        if choice == "4":
-            print("Bye.")
-            break
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--serve", action="store_true", help="Run FastAPI server")
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", default=7860, type=int)
-    args = parser.parse_args()
-
-    if args.serve:
-        import uvicorn
-        uvicorn.run("main:app", host=args.host, port=args.port, reload=True)
-    else:
-        cli_loop()
+# Run with: uvicorn backend.main:app --host 0.0.0.0 --port 7860

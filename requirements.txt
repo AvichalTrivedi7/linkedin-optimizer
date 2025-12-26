@@ -1,9 +1,8 @@
-flask==3.0.0
-flask-cors==4.0.0
-fastapi==0.109.0
-uvicorn==0.27.0
-pydantic==2.5.3
-textstat==0.7.3
-sentence-transformers==2.2.2
-nltk==3.8.1
-llama-cpp-python==0.2.32
+fastapi
+uvicorn[standard]
+python-dotenv
+pydantic
+llama-cpp-python
+aiofiles
+httpx
+python-multipart
